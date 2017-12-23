@@ -1,18 +1,26 @@
 from django.http import HttpResponse
 from django.shortcuts import render,get_object_or_404
+
+from posts.forms import PostForm
 from posts.models import Post
 
 # Create your views here.
 
 
 def post_create(request):
+    form = PostForm(request.POST or None)
+    if form.is_valid():
+        instance = form.save(commit=False)
+        instance.save()
+
     context = {
-        'title': 'create'
+        'form': form,
+        'title': 'Create Post'
     }
-    return render(request, 'index.html', context)
+    return render(request, 'post_form.html', context)
 
 
-def post_detail(request, id):
+def post_detail(request, id=None):
     instance = get_object_or_404(Post, id = id)
     context = {
         'title': 'detail',
@@ -33,14 +41,20 @@ def post_list(request):
             'title': 'list'
         }
     return render(request, 'index.html', context)
-    #return HttpResponse('<h1>Hello to Posts</h1>')
 
 
-def post_update(request):
+def post_update(request, id=None):
+    instance = get_object_or_404(Post, id = id)
+    form = PostForm(request.POST or None)
+    if form.is_valid():
+        instance = form.save(commit=False)
+        instance.save()
     context = {
-        'title': 'update'
+        'title': 'update',
+        'instance': instance,
+        'form': form
     }
-    return render(request, 'index.html', context)
+    return render(request, 'post_form.html', context)
 
 
 def post_delete(request):
