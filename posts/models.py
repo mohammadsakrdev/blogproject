@@ -3,8 +3,13 @@ from django.core.urlresolvers import reverse
 from django.db.models.signals import pre_save
 from django.utils.text import slugify
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 
+from comments.models import Comment
+
+from markdown_deux import markdown
 # Create your models here.
 
 #Post.objects.all()
@@ -16,6 +21,7 @@ class PostManager(models.Manager):
 
 def upload_location(instance, filename):
     return '%s/%s' %(instance.id, filename)
+
 
 class Post(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, default=1)
@@ -35,6 +41,21 @@ class Post(models.Model):
 
     objects = PostManager()
 
+    @property
+    def comments(self):
+        instance = self
+        qs = Comment.objects.filter_by_instance(instance)
+        return qs
+
+    @property
+    def get_content_type(self):
+        instance = self
+        content_type = ContentType.objects.get_for_model(instance.__class__)
+        return content_type
+
+    def get_markdown(self):
+        return mark_safe(markdown(self.content))
+
     def __unicode__(self):
         return self.title
 
@@ -47,6 +68,7 @@ class Post(models.Model):
     class Meta:
         ordering = ['-timestamp', 'updated']
 
+
 def create_slug(instance, new_slug=None):
     slug = slugify(instance.title)
     if new_slug is not None:
@@ -57,6 +79,7 @@ def create_slug(instance, new_slug=None):
         new_slug = '%s-%s' %(slug, qs.first().id)
         return create_slug(instance, new_slug=new_slug)
     return slug
+
 
 def pre_save_post_receiver(sender, instance, *args, **kwargs):
     if not instance.slug:

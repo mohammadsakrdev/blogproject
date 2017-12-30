@@ -37,8 +37,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #third party
+    'pagedown',
+    'markdown_deux',
+    'crispy_forms',
+
+    #local
     'posts',
+    'comments',
 ]
+
+CRISPY_TEMPLATE_PACK  = 'bootstrap3'
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',

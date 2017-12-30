@@ -1,44 +1,85 @@
 {% extends 'base.html' %}
 {% load urlify %}
+{% load crispy_forms_tags %}
 
 {% block head_title %}
     {{ instance.title }} |  {{ block.super }}
 {% endblock head_title %}
 {% block content %}
     <div class="col-sm-6 col-sm-offset-3">
+        <br/>
+        <h1>{{ instance.title }}
+            {% if instance.draft %}
+                <small>{{ instance.publish }}</small>{% endif %}
+        </h1>
         {% if instance.image %}
             <img src="{{ instance.image.url }}" class="img-responsive"/>
         {% endif %}
-        <h1>{{ instance.title }}
-            {% if instance.draft %}<small>{{ instance.publish }}</small>{% endif %}
-        </h1>
-    {% if instance.user.get_full_name %}
-    <p>Author: {{ instance.user.get_full_name }}</p>
-    {% endif %}
-    <p><div class="fb-like" data-href="{{ request.build_absolute_uri }}" data-layout="button_count" data-action="like"
-         data-size="small" data-show-faces="true" data-share="true"></div></p>
-    <hr/>
-    <div class="row">
-    <div class="col-sm-offset-1 col-sm-12">
-        {{ instance.content| linebreaks |truncatewords:50 }}
-        <hr/></br>
-        <div class="fb-comments" data-href="{{ request.build_absolute_uri }}"></div>
-        </div>
-        </div>
+        <hr/>
+        {% if instance.user.get_full_name %}
+            <p>Author: {{ instance.user.get_full_name }}</p>
+        {% endif %}
         <p>
-        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}/">
-            Facebook
-        </a>
-        <a href="https://twitter.com/home?status={{ instance.content | urlify }}%20{{ request.build_absolute_uri }}">
-            Twitter
-        </a>
-        <a href='https://plus.google.com/share?url={{ request.build_absolute_uri }}'></a>
-        <a href="https://www.linkedin.com/shareArticle?mini=true&url=http://swiftforentrepreneurs.com/&title=Be%20first%20%7C%20Join%20Swift%20for%20Entrepreneurs&summary=Swift%20for%20Entrepreneurs%20is%20a%20project-based%20programming%20course%20for%20non-technical%20founders.%20We'll%20learn%20how%20to%20build%20iOS%20apps%20from%20scratch%20using%20Apple's%20new%20programming%20language:%20Swift.%20Be%20first%20and%20learn%20with%20me!&source={{ request.build_absolute_uri }}">
-            Linkedin
-        </a>
-        <a href="http://www.reddit.com/submit?url={{ request.build_absolute_uri }}/&title={{ sharing_string }}">
-            Reddit</a>
+        <div class="fb-like" data-href="{{ request.build_absolute_uri }}" data-layout="button_count" data-action="like"
+             data-size="small" data-show-faces="true" data-share="true"></div>
         </p>
-    </div>
+        </br>
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-12">
+                <div class="post-detail-item">{{ instance.get_markdown | linebreaks }}
+                    <div/>
+                    </br>
+                    <div>
+                        <p class="lead">Comments</p>
+                        <hr/>
+                        <form method="POST" action=".">{% csrf_token %}
+                            {{ comment_form | crispy }}
+                            <input type="submit" value="Post Comment" class="btn-default btn"/>
+                        </form>
+                        {% for comment in comments %}
+                            <blockquote class="blockquote">
+                                <p class="mb-0">{{ comment.content }}</p>
+                                <footer class="blockquote-footer">via {{ comment.user }}
+                                    on {{ comment.timestamp | timesince }}
+                                    {% if comment.children.count %}{{ comment.children.count }} Comments | {% endif %}
+                                    <a class="comment-reply-btn" href="#">Reply</a>
 
+                                </footer>
+                            <div class="comment-reply" >
+                                {% for child in comment.children %}
+                                    <blockquote class="blockquote">
+                                        <p class="mb-0">{{ child.content }}</p>
+                                        <footer class="blockquote-footer">via {{ child.user }}
+                                            on {{ child.timestamp | timesince }}</footer>
+                                    </blockquote>
+                                {% endfor %}
+
+                                <form method="POST" action=".">{% csrf_token %}
+                                    {{ comment_form | crispy }}
+                                    <input type="hidden" name="parent_id" value="{{ comment.id }}"/>
+                                    <input type="submit" value="Reply" class="btn-default btn"/>
+                                </form>
+                            </div>
+                            </blockquote>
+                            <hr/>
+                        {% endfor %}
+                    </div>
+                </div>
+                <p>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}/">
+                        Facebook
+                    </a>
+                    <a href="https://twitter.com/home?status={{ instance.content | urlify }}%20{{ request.build_absolute_uri }}">
+                        Twitter
+                    </a>
+                    <a href='https://plus.google.com/share?url={{ request.build_absolute_uri }}'></a>
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=http://swiftforentrepreneurs.com/&title=Be%20first%20%7C%20Join%20Swift%20for%20Entrepreneurs&summary=Swift%20for%20Entrepreneurs%20is%20a%20project-based%20programming%20course%20for%20non-technical%20founders.%20We'll%20learn%20how%20to%20build%20iOS%20apps%20from%20scratch%20using%20Apple's%20new%20programming%20language:%20Swift.%20Be%20first%20and%20learn%20with%20me!&source={{ request.build_absolute_uri }}">
+                        Linkedin
+                    </a>
+                    <a href="http://www.reddit.com/submit?url={{ request.build_absolute_uri }}/&title={{ sharing_string }}">
+                        Reddit</a>
+                </p>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
