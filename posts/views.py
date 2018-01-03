@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render
 from django.db.models import Q
+from .utils import get_read_time
 
 from urllib.parse import quote
 
@@ -17,6 +18,7 @@ from comments.models import Comment
 from comments.forms import CommentForm
 
 # Create your views here.
+
 
 def post_create(request):
     if not request.user.is_staff or not request.user.is_superuser:
@@ -40,6 +42,8 @@ def post_create(request):
 
 def post_detail(request, id=None):
     instance = get_object_or_404(Post, id=id)
+    if not instance.read_time:
+        instance.read_time = get_read_time(instance.get_markdown())
     if instance.draft or instance.publish > timezone.now():
         if not request.user.is_staff or not request.user.is_superuser:
             raise Http404
@@ -50,7 +54,7 @@ def post_detail(request, id=None):
         'object_id': instance.id
     }
     form = CommentForm(request.POST or None, initial=initial_data)
-    if form.is_valid():
+    if form.is_valid() and request.user.is_authenticated():
         c_type = form.cleaned_data.get('content_type')
         content_type = ContentType.objects.get(model=c_type)
         object_id = form.cleaned_data.get('object_id')

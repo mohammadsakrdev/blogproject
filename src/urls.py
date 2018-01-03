@@ -17,12 +17,19 @@ Including another URLconf
 from django.conf.urls import include,url
 from django.contrib import admin
 from posts import urls as post_url
+from comments import urls as comments_url
 from django.conf import settings
 from django.conf.urls.static import static
 
+from accounts.views import (login_view, register_view, logout_view)
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^posts/', include(post_url, namespace='posts')),
+    url(r'^comments/', include(comments_url, namespace='comments')),
+    url(r'^login/', login_view, name='login'),
+    url(r'^logout/', logout_view, name='logout'),
+    url(r'^register/', register_view, name='register'),
+    url(r'^', include(post_url, namespace='posts')),
 ]
 
 if settings.DEBUG:

@@ -16,6 +16,7 @@
             <img src="{{ instance.image.url }}" class="img-responsive"/>
         {% endif %}
         <hr/>
+        <p>Read Time : {{ instance.read_time | time:'i'}} Minutes</p>
         {% if instance.user.get_full_name %}
             <p>Author: {{ instance.user.get_full_name }}</p>
         {% endif %}
@@ -31,18 +32,23 @@
                     </br>
                     <div>
                         <p class="lead">Comments</p>
+                        {% if request.user.is_authenticated %}
                         <hr/>
                         <form method="POST" action=".">{% csrf_token %}
                             {{ comment_form | crispy }}
                             <input type="submit" value="Post Comment" class="btn-default btn"/>
                         </form>
+                    {% else %}
+                    <p>you must login to comment</p>
+                    {% endif %}
                         {% for comment in comments %}
                             <blockquote class="blockquote">
-                                <p class="mb-0">{{ comment.content }}</p>
+                                <p class="mb-0">{{ comment.content | linebreaksbr | wordwrap:5}}</p>
                                 <footer class="blockquote-footer">via {{ comment.user }}
                                     on {{ comment.timestamp | timesince }}
                                     {% if comment.children.count %}{{ comment.children.count }} Comments | {% endif %}
-                                    <a class="comment-reply-btn" href="#">Reply</a>
+                                    <a class="comment-reply-btn" href="#">Reply</a> |
+                                <a class="" href="{{ comment.get_delete_url }}">Delete</a>
 
                                 </footer>
                             <div class="comment-reply" >
