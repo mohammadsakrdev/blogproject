@@ -5,6 +5,11 @@
 {% block head_title %}
     {{ instance.title }} |  {{ block.super }}
 {% endblock head_title %}
+
+        {% block post_detail_block %}
+            <li><a href="{{ instance.ge_absolute_url }}">{{ instance.title }}</a></li>
+        {% endblock post_detail_block %}
+
 {% block content %}
     <div class="col-sm-6 col-sm-offset-3">
         <br/>
