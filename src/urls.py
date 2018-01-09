@@ -17,6 +17,8 @@ Including another URLconf
 from django.conf.urls import include,url
 from django.contrib import admin
 from posts import urls as post_url
+from posts.api import urls as posts_api
+from comments.api import urls as comments_api
 from comments import urls as comments_url
 from django.conf import settings
 from django.conf.urls.static import static
@@ -30,6 +32,8 @@ urlpatterns = [
     url(r'^logout/', logout_view, name='logout'),
     url(r'^register/', register_view, name='register'),
     url(r'^', include(post_url, namespace='posts')),
+    url(r'^api/posts/', include(posts_api, namespace='posts-api')),
+    url(r'^api/comments/', include(comments_api, namespace='comments-api')),
 ]
 
 if settings.DEBUG:

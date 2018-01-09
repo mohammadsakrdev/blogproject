@@ -1,6 +1,5 @@
-
 from django.conf.urls import url
-from .views import (post_list,post_create,post_detail,post_delete,post_update)
+from .views import (post_list, post_create, post_detail, post_delete, post_update)
 
 urlpatterns = [
     url(r'^$', post_list, name='list'),
